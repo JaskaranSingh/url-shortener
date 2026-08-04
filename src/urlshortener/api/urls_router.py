@@ -8,11 +8,13 @@ from urlshortener.api.dependencies import (
     get_create_short_url_service,
     get_delete_url_service,
     get_redirect_service,
+    get_stats_service,
 )
-from urlshortener.api.schemas import CreateUrlRequest, CreateUrlResponse
+from urlshortener.api.schemas import CreateUrlRequest, CreateUrlResponse, StatsResponse
 from urlshortener.application.create_short_url_service import CreateShortUrlService
 from urlshortener.application.delete_url_service import DeleteUrlService
 from urlshortener.application.redirect_service import RedirectService
+from urlshortener.application.stats_service import StatsService
 
 router = APIRouter()
 
@@ -55,3 +57,17 @@ def delete_url(
 ) -> None:
     now = datetime.now(UTC)
     service.execute(code, now=now)
+
+
+@router.get("/urls/{code}/stats", response_model=StatsResponse)
+def get_stats(
+    code: str,
+    service: StatsService = Depends(get_stats_service),
+) -> StatsResponse:
+    stats = service.execute(code)
+    return StatsResponse(
+        code=stats.code,
+        total_clicks=stats.total_clicks,
+        last_accessed=stats.last_accessed,
+        referrer_breakdown=stats.referrer_breakdown,
+    )

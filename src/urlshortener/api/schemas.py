@@ -40,3 +40,10 @@ class CreateUrlResponse(BaseModel):
     long_url: str
     created_at: datetime
     expires_at: datetime | None
+
+
+class StatsResponse(BaseModel):
+    code: str
+    total_clicks: int
+    last_accessed: datetime | None
+    referrer_breakdown: dict[str, int]

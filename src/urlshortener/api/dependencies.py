@@ -10,6 +10,7 @@ from urlshortener.application.create_short_url_service import CreateShortUrlServ
 from urlshortener.application.delete_url_service import DeleteUrlService
 from urlshortener.application.redirect_service import RedirectService
 from urlshortener.application.short_code_generator import ShortCodeGenerator
+from urlshortener.application.stats_service import StatsService
 from urlshortener.domain.repository import UrlRepository
 
 
@@ -48,3 +49,9 @@ def get_delete_url_service(
     repository: UrlRepository = Depends(get_url_repository),
 ) -> DeleteUrlService:
     return DeleteUrlService(repository=repository)
+
+
+def get_stats_service(
+    repository: UrlRepository = Depends(get_url_repository),
+) -> StatsService:
+    return StatsService(repository=repository)
