@@ -11,6 +11,15 @@ class CreateUrlRequest(BaseModel):
         None, description="Optional expiry; must be timezone-aware and in the future"
     )
 
+    @field_validator("expires_at", mode="before")
+    @classmethod
+    def _treat_empty_string_as_absent(cls, value: object) -> object:
+        # Some clients (HTML forms, simple date pickers) serialize "no value"
+        # as "" rather than omitting the key or sending null. "" isn't a
+        # valid datetime, so without this it fails Pydantic's own parsing
+        # before our validation ever runs - treat it the same as absent.
+        return None if value == "" else value
+
     @field_validator("expires_at")
     @classmethod
     def _require_timezone_aware_and_normalize_to_utc(

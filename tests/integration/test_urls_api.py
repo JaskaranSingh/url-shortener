@@ -50,6 +50,22 @@ def test_create_url_with_future_expiry(client):
     assert datetime.fromisoformat(response.json()["expires_at"]) == expires_at
 
 
+def test_create_url_with_empty_string_expiry_is_treated_as_absent(client):
+    """Some clients serialize "no value" as "" rather than omitting the key
+    or sending null - must not 422, must behave exactly like no expiry."""
+    response = client.post("/urls", json={"long_url": "https://example.com", "expires_at": ""})
+
+    assert response.status_code == 201
+    assert response.json()["expires_at"] is None
+
+
+def test_create_url_with_explicit_null_expiry(client):
+    response = client.post("/urls", json={"long_url": "https://example.com", "expires_at": None})
+
+    assert response.status_code == 201
+    assert response.json()["expires_at"] is None
+
+
 def test_create_url_with_non_utc_expiry_is_normalized_to_utc(client):
     """+05:30 is a valid instant, but docs/SCHEMA.md decided all stored
     timestamps are UTC - the API boundary normalizes it, not just accepts it
