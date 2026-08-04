@@ -9,3 +9,5 @@ venv/
 htmlcov/
 *.db
 *.db-journal
+*.log
+*.log.*
