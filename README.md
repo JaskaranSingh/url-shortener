@@ -27,11 +27,11 @@ design — layers, control flow, and key decisions — lives in
 - [x] Requirements (PRD)
 - [x] Architecture (layers, control flow, key decisions)
 - [x] Implementation plan ([Issues](https://github.com/JaskaranSingh/url-shortener/issues) · [Milestones](https://github.com/JaskaranSingh/url-shortener/milestones))
-- [ ] Core API (create / redirect / delete)
+- [ ] Core API (create ✅ / redirect / delete)
 - [ ] Analytics
 - [ ] Reliability (rate limiting, expiry)
-- [ ] Automated tests
-- [ ] Setup instructions
+- [x] Automated tests (69 passing, 100% coverage as of Phase 4 — grows every phase)
+- [x] Setup instructions
 
 Work is tracked as one GitHub issue per phase (Phase 0 → 11, plus a Backlog
 milestone for deferred stretch items), each carrying its own task checklist,
@@ -50,4 +50,27 @@ deliberately left open in the PRD).
 
 ## Setup
 
-Not yet available — added once the initial implementation lands.
+Requires Python 3.12+.
+
+```bash
+python3.12 -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev]"
+
+# run the server
+uvicorn urlshortener.main:app --reload
+```
+
+Then open http://127.0.0.1:8000/docs for interactive Swagger UI (generated
+automatically by FastAPI — no manual integration needed).
+
+By default the app uses a `urlshortener.db` SQLite file in the working
+directory; override with the `URLSHORTENER_DB_PATH` env var. `BASE_URL` for
+generated short URLs is configurable via `URLSHORTENER_BASE_URL` (defaults to
+`http://localhost:8000`).
+
+Run tests:
+
+```bash
+pytest --cov=urlshortener --cov-report=term-missing
+```
