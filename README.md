@@ -26,12 +26,20 @@ design — layers, control flow, and key decisions — lives in
 
 - [x] Requirements (PRD)
 - [x] Architecture (layers, control flow, key decisions)
-- [ ] Implementation plan
+- [x] Implementation plan ([Issues](https://github.com/JaskaranSingh/url-shortener/issues) · [Milestones](https://github.com/JaskaranSingh/url-shortener/milestones))
 - [ ] Core API (create / redirect / delete)
 - [ ] Analytics
 - [ ] Reliability (rate limiting, expiry)
 - [ ] Automated tests
 - [ ] Setup instructions
+
+Work is tracked as one GitHub issue per phase (Phase 0 → 11, plus a Backlog
+milestone for deferred stretch items), each carrying its own task checklist,
+FR/NFR traceability, and dependencies. Labels mark which of the three
+required engineering scenarios a phase belongs to: `scenario:greenfield`
+(core build), `scenario:brownfield` (Phase 9 — rate limiting added to
+already-working code), `scenario:ambiguous` (Phase 10 — custom aliases,
+deliberately left open in the PRD).
 
 ## Documentation
 
