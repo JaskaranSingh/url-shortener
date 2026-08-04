@@ -67,7 +67,10 @@ automatically by FastAPI — no manual integration needed).
 By default the app uses a `urlshortener.db` SQLite file in the working
 directory; override with the `URLSHORTENER_DB_PATH` env var. `BASE_URL` for
 generated short URLs is configurable via `URLSHORTENER_BASE_URL` (defaults to
-`http://localhost:8000`).
+`http://localhost:8000`). Structured JSON request/response/error logs are
+written to `urlshortener.log` by default (rotating, 10MB × 5 backups);
+override with `URLSHORTENER_LOG_PATH`. Logs never include request or
+response bodies.
 
 Run tests:
 
