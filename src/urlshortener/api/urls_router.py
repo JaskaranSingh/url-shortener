@@ -4,9 +4,14 @@ from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import RedirectResponse
 
 from urlshortener import config
-from urlshortener.api.dependencies import get_create_short_url_service, get_redirect_service
+from urlshortener.api.dependencies import (
+    get_create_short_url_service,
+    get_delete_url_service,
+    get_redirect_service,
+)
 from urlshortener.api.schemas import CreateUrlRequest, CreateUrlResponse
 from urlshortener.application.create_short_url_service import CreateShortUrlService
+from urlshortener.application.delete_url_service import DeleteUrlService
 from urlshortener.application.redirect_service import RedirectService
 
 router = APIRouter()
@@ -41,3 +46,12 @@ def redirect(
     referrer = request.headers.get("referer")
     long_url = service.execute(code, now=now, referrer=referrer)
     return RedirectResponse(url=long_url, status_code=status.HTTP_302_FOUND)
+
+
+@router.delete("/urls/{code}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_url(
+    code: str,
+    service: DeleteUrlService = Depends(get_delete_url_service),
+) -> None:
+    now = datetime.now(UTC)
+    service.execute(code, now=now)
