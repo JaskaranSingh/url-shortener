@@ -192,6 +192,50 @@ additional scope only if time permits.
 - **Integration** (`tests/integration`): real `SqliteUrlRepository` against a
   temp SQLite file, plus full API tests via FastAPI's `TestClient`.
 
+## Scalability Path (NFR7 — documented, not built)
+
+This is a deliberately single-instance prototype (see PRD Non-Goals). This
+section documents the credible path to scale, without building any of it —
+building ahead of validated demand would be premature for a 2-3 day
+prototype. Four things currently assume single-instance:
+
+1. **SQLite is single-writer.** Create/delete/click-recording throughput is
+   bounded by one writer at a time — fine at prototype load, a real ceiling
+   under sustained concurrent write volume.
+2. **The DB is a local file.** Multiple API instances can't safely share one
+   SQLite file over a network filesystem — this alone is what forces
+   single-instance today, more than the write-throughput point above.
+3. **In-memory request counters (Phase 8) are per-process.** Each instance
+   would maintain its own independent counts; there's no aggregation across
+   instances.
+4. **The in-memory rate limiter (Phase 9, once built) is per-process** for
+   the same reason — running N instances would effectively multiply the
+   real limit by N, since each enforces its own independent bucket.
+
+**The path, if scale is ever actually needed:**
+
+- **Storage**: migrate SQLite → a managed relational DB (e.g. Postgres).
+  Because of the ports & adapters boundary, this touches *only*
+  `adapters/sqlite_url_repository.py` (replaced by an equivalent adapter
+  implementing the same `UrlRepository` port) — nothing in `domain` or
+  `application` changes. Timestamps are already stored as ISO 8601 strings
+  (`docs/SCHEMA.md`), which parse directly into Postgres's native timestamp
+  columns.
+- **Horizontal API scaling**: once storage is externalized (a shared DB, not
+  a local file), the app becomes stateless per request and can run as N
+  replicas behind a load balancer — *except* for the two in-memory pieces
+  below, which would need to move first.
+- **Rate limiting**: the in-memory token bucket would need a shared store
+  (e.g. Redis) to enforce one real limit across instances rather than N
+  independent ones. This will be called out explicitly as a known,
+  accepted limitation when Phase 9 is built, not discovered later.
+- **Counters**: similarly, would need either external aggregation (each
+  instance's counters scraped and summed by the observability backend) or a
+  shared counter store — not needed at single-instance scale.
+- **Read-through cache** (Backlog #13, not built): same caveat — a shared
+  cache (e.g. Redis) would be required for cache coherence and correct
+  invalidation-on-delete/expiry across instances.
+
 ## Key Decisions & Rationale
 
 | Decision | Rationale |

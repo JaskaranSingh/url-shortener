@@ -30,8 +30,14 @@ design — layers, control flow, and key decisions — lives in
 - [x] Core API (create / redirect / delete)
 - [x] Analytics (click counts, last-accessed, referrer breakdown)
 - [ ] Reliability (rate limiting ❌ / expiry ✅ / structured logging ✅)
-- [x] Automated tests (116 passing, 99% coverage as of Phase 7 — grows every phase)
+- [x] Automated tests (128 passing, 99% coverage as of Phase 8 — grows every phase)
 - [x] Setup instructions
+
+**Greenfield core build (Phases 0–8) is complete.** Phase 9 (rate limiting —
+the brownfield scenario) and Phase 10 (custom aliases — the ambiguous
+scenario) are intentionally deferred for now; see
+[`docs/ENGINEERING_SUMMARY.md`](docs/ENGINEERING_SUMMARY.md) for the current
+interim state.
 
 Work is tracked as one GitHub issue per phase (Phase 0 → 11, plus a Backlog
 milestone for deferred stretch items), each carrying its own task checklist,
@@ -44,9 +50,11 @@ deliberately left open in the PRD).
 ## Documentation
 
 - [`docs/PRD.md`](docs/PRD.md) — functional & non-functional requirements, open questions
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — layers, control flow diagrams, short-code generation strategy, key decisions
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — layers, control flow diagrams, short-code generation strategy, key decisions, scalability path (NFR7)
 - [`docs/PLAN.md`](docs/PLAN.md) — phase-by-phase breakdown and GitHub issue/milestone/label structure behind the tracker above
 - [`docs/SCHEMA.md`](docs/SCHEMA.md) — `urls`/`clicks` table schema and the design decisions behind it (soft delete, indexing, timestamp format)
+- [`docs/DECISIONS.md`](docs/DECISIONS.md) — chronological log of every non-obvious engineering decision, with links to where each was made
+- [`docs/ENGINEERING_SUMMARY.md`](docs/ENGINEERING_SUMMARY.md) — plan/rationale, artifacts, validation approach, risks/trade-offs, assumptions, limitations (interim — Phases 0–8)
 
 ## Setup
 
