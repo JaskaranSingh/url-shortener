@@ -1,3 +1,6 @@
+from datetime import datetime
+
+
 class DomainError(Exception):
     """Base class for all domain-level errors."""
 
@@ -41,3 +44,12 @@ class InvalidUrlError(DomainError):
         self.url = url
         self.reason = reason
         super().__init__(f"Invalid URL {url!r}: {reason}")
+
+
+class InvalidExpiryError(DomainError):
+    """Raised when a submitted expires_at fails validation (e.g. already in the past)."""
+
+    def __init__(self, expires_at: datetime, reason: str) -> None:
+        self.expires_at = expires_at
+        self.reason = reason
+        super().__init__(f"Invalid expires_at {expires_at!r}: {reason}")

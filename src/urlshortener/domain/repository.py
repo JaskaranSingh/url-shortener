@@ -24,7 +24,7 @@ class UrlRepository(ABC):
         """Return the ShortUrl for code, or None if it has never existed."""
 
     @abstractmethod
-    def delete(self, code: str) -> None:
+    def delete(self, code: str, deleted_at: datetime) -> None:
         """Soft-delete: mark the mapping deleted. No-op if missing or already deleted."""
 
     @abstractmethod
