@@ -20,7 +20,7 @@ deliberately left open, live in [`docs/PRD.md`](docs/PRD.md). The system
 design — layers, control flow, and key decisions — lives in
 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
-**Stack**: Python + FastAPI, SQLite for storage.
+**Stack**: Python 3.12 + FastAPI, SQLite for storage.
 
 ## Status
 
