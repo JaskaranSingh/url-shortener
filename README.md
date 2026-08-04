@@ -16,11 +16,16 @@ as the project progresses.
   accepted trade-offs this implies.
 
 Full functional and non-functional requirements, including decisions still
-deliberately left open, live in [`docs/PRD.md`](docs/PRD.md).
+deliberately left open, live in [`docs/PRD.md`](docs/PRD.md). The system
+design — layers, control flow, and key decisions — lives in
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+
+**Stack**: Python + FastAPI, SQLite for storage.
 
 ## Status
 
 - [x] Requirements (PRD)
+- [x] Architecture (layers, control flow, key decisions)
 - [ ] Implementation plan
 - [ ] Core API (create / redirect / delete)
 - [ ] Analytics
@@ -31,6 +36,7 @@ deliberately left open, live in [`docs/PRD.md`](docs/PRD.md).
 ## Documentation
 
 - [`docs/PRD.md`](docs/PRD.md) — functional & non-functional requirements, open questions
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — layers, control flow diagrams, short-code generation strategy, key decisions
 
 ## Setup
 
