@@ -46,6 +46,7 @@ deliberately left open in the PRD).
 - [`docs/PRD.md`](docs/PRD.md) — functional & non-functional requirements, open questions
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — layers, control flow diagrams, short-code generation strategy, key decisions
 - [`docs/PLAN.md`](docs/PLAN.md) — phase-by-phase breakdown and GitHub issue/milestone/label structure behind the tracker above
+- [`docs/SCHEMA.md`](docs/SCHEMA.md) — `urls`/`clicks` table schema and the design decisions behind it (soft delete, indexing, timestamp format)
 
 ## Setup
 

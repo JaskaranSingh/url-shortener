@@ -36,7 +36,8 @@ engineering judgment — not a hardened multi-region production system.
 
 **FR2 — Redirect**
 - `GET /{code}` resolves the code and issues an HTTP redirect to the original URL.
-- Returns `404` for unknown codes, `410 Gone` for expired codes.
+- Returns `404` for unknown codes, `410 Gone` for expired **or deleted** codes — both
+  are cases where the code existed and is now intentionally, permanently unavailable.
 - Uses `302 Found` (decided). A `301` is cache-friendly but browsers/CDNs cache it
   indefinitely, which risks serving a stale destination after a mapping is deleted or
   expires; `302` keeps the server authoritative on every visit.
@@ -50,12 +51,21 @@ engineering judgment — not a hardened multi-region production system.
 - A short URL may have an optional expiry, set at creation time. Default is **no
   expiry** (decided) — matches common shortener behavior (e.g. bit.ly) and keeps the
   default case simple; expiry is opt-in per URL, not a global TTL.
-- Expired codes resolve to `410` and are eligible for periodic cleanup.
+- Expired codes resolve to `410`, enforced by a read-time check against `expires_at`
+  — no background cleanup/purge process (decided). Since nothing is ever physically
+  removed for expiry, a check at read time is sufficient on its own.
 
 **FR5 — Deletion**
-- `DELETE /urls/{code}` removes a mapping. Since v1 has no auth, this is **unscoped**
-  — anyone holding a valid code can delete it. Accepted as a prototype-scope risk (see
-  Section 7); revisit if auth is ever added.
+- `DELETE /urls/{code}` marks a mapping as deleted (**soft delete**, decided) — the
+  record and its click history are never physically removed. Subsequent redirects and
+  stats lookups for that code return `410 Gone`, identical to expiry.
+- Rationale: preserves an audit trail and makes "total codes ever generated"
+  (`SELECT COUNT(*) FROM urls`) a meaningful metric; also sidesteps a subtle
+  correctness risk where a physically deleted row's id could be reused and
+  accidentally reassociate old click history with an unrelated new code.
+- Since v1 has no auth, this remains **unscoped** — anyone holding a valid code can
+  delete it. Accepted as a prototype-scope risk (see Section 7); revisit if auth is
+  ever added.
 
 **FR6 — Custom Aliases (OPEN — intentionally unresolved)**
 - Ability to request a custom short code instead of an auto-generated one.
