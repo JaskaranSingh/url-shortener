@@ -1,4 +1,4 @@
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime, timedelta, timezone
 
 import pytest
 from fastapi.testclient import TestClient
@@ -48,6 +48,24 @@ def test_create_url_with_future_expiry(client):
     # compare parsed datetimes, not raw strings - Pydantic v2 serializes UTC
     # as a "Z" suffix, which is a different (equally valid) ISO 8601 spelling
     assert datetime.fromisoformat(response.json()["expires_at"]) == expires_at
+
+
+def test_create_url_with_non_utc_expiry_is_normalized_to_utc(client):
+    """+05:30 is a valid instant, but docs/SCHEMA.md decided all stored
+    timestamps are UTC - the API boundary normalizes it, not just accepts it
+    as-is."""
+    ist = timezone(timedelta(hours=5, minutes=30))
+    expires_at_ist = (NOW + timedelta(days=7)).replace(tzinfo=ist)
+
+    response = client.post(
+        "/urls",
+        json={"long_url": "https://example.com", "expires_at": expires_at_ist.isoformat()},
+    )
+
+    assert response.status_code == 201
+    returned = datetime.fromisoformat(response.json()["expires_at"])
+    assert returned == expires_at_ist  # same instant
+    assert returned.utcoffset().total_seconds() == 0  # but normalized to UTC
 
 
 def test_two_consecutive_creates_return_different_codes(client):
