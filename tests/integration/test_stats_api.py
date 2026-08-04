@@ -1,8 +1,10 @@
+import concurrent.futures
 from datetime import UTC, datetime, timedelta
 
 import pytest
 from fastapi.testclient import TestClient
 
+from urlshortener import config
 from urlshortener.adapters.db.connection import create_connection
 from urlshortener.adapters.sqlite_url_repository import SqliteUrlRepository
 from urlshortener.api.dependencies import get_url_repository
@@ -93,3 +95,30 @@ def test_stats_still_available_for_expired_code(client, repository):
 
     assert response.status_code == 200
     assert response.json()["total_clicks"] == 1
+
+
+def test_concurrent_redirects_all_record_clicks_correctly(tmp_path, monkeypatch):
+    """Uses the real per-request dependency chain (not the shared-repository
+    override the other tests in this file use), since that's what actually
+    runs under concurrent load - each request gets its own fresh SQLite
+    connection. Click recording is append-only (INSERT per click, not a
+    read-modify-write counter), so there's no classic lost-update race to
+    worry about, but that's a claim worth verifying under real concurrency
+    rather than just asserting."""
+    monkeypatch.setattr(config, "DATABASE_PATH", str(tmp_path / "concurrent.db"))
+
+    with TestClient(app) as test_client:
+        created = test_client.post("/urls", json={"long_url": "https://example.com"}).json()
+        code = created["code"]
+
+        def hit(_):
+            return test_client.get(f"/{code}", follow_redirects=False)
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+            responses = list(executor.map(hit, range(20)))
+
+        assert all(r.status_code == 302 for r in responses)
+
+        stats_response = test_client.get(f"/urls/{code}/stats")
+
+    assert stats_response.json()["total_clicks"] == 20
