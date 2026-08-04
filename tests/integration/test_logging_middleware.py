@@ -5,6 +5,7 @@ from fastapi.testclient import TestClient
 
 from urlshortener.adapters.db.connection import create_connection
 from urlshortener.adapters.logging import configure_logging
+from urlshortener.adapters.metrics import reset_counters
 from urlshortener.adapters.sqlite_url_repository import SqliteUrlRepository
 from urlshortener.api.dependencies import get_url_repository
 from urlshortener.main import app
@@ -21,6 +22,7 @@ def repository(tmp_path):
 @pytest.fixture
 def client(repository, tmp_path):
     configure_logging(str(tmp_path / "test.log"))
+    reset_counters()  # counters are a process-wide singleton - isolate each test
     app.dependency_overrides[get_url_repository] = lambda: repository
     # raise_server_exceptions=False: an unhandled exception should surface to
     # a real caller as an actual 500 response, not blow up the test process -
@@ -100,3 +102,43 @@ def test_unhandled_exception_is_logged_at_error_with_traceback_and_still_returns
     assert len(records) == 1
     assert records[0].levelname == "ERROR"
     assert records[0].exc_info is not None
+
+
+def test_no_periodic_summary_before_the_interval_is_reached(client, caplog):
+    with caplog.at_level(logging.INFO, logger="urlshortener"):
+        for _ in range(9):  # SUMMARY_LOG_INTERVAL is 10
+            client.get("/doesnotexist", follow_redirects=False)
+
+    summaries = [r for r in _urlshortener_records(caplog) if r.message == "periodic_summary"]
+    assert summaries == []
+
+
+def test_periodic_summary_logged_every_interval_requests(client, caplog):
+    with caplog.at_level(logging.INFO, logger="urlshortener"):
+        for _ in range(10):  # SUMMARY_LOG_INTERVAL
+            client.get("/doesnotexist", follow_redirects=False)
+
+    summaries = [r for r in _urlshortener_records(caplog) if r.message == "periodic_summary"]
+    assert len(summaries) == 1
+    assert summaries[0].total_requests == 10
+    assert summaries[0].status_class_counts == {"4xx": 10}
+    assert summaries[0].error_rate == 1.0
+
+
+def test_redirect_latency_is_only_tracked_for_the_redirect_route(client, caplog):
+    created = client.post("/urls", json={"long_url": "https://example.com"}).json()
+    code = created["code"]
+    caplog.clear()
+
+    with caplog.at_level(logging.INFO, logger="urlshortener"):
+        client.get(f"/{code}", follow_redirects=False)  # the redirect route
+        client.get(f"/urls/{code}/stats")  # a different GET route, same-ish shape
+        # /doesnotexist would ALSO match the /{code} route (that's how the
+        # redirect endpoint produces its own 404s), so padding uses POST
+        # /urls instead, which never touches /{code} at all.
+        for _ in range(8):
+            client.post("/urls", json={"long_url": "https://example.com"})
+
+    summaries = [r for r in _urlshortener_records(caplog) if r.message == "periodic_summary"]
+    assert len(summaries) == 1
+    assert summaries[0].redirect_count == 1
