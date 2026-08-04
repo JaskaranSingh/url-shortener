@@ -27,10 +27,10 @@ design — layers, control flow, and key decisions — lives in
 - [x] Requirements (PRD)
 - [x] Architecture (layers, control flow, key decisions)
 - [x] Implementation plan ([Issues](https://github.com/JaskaranSingh/url-shortener/issues) · [Milestones](https://github.com/JaskaranSingh/url-shortener/milestones))
-- [ ] Core API (create ✅ / redirect / delete)
+- [ ] Core API (create ✅ / redirect ✅ / delete)
 - [ ] Analytics
 - [ ] Reliability (rate limiting, expiry)
-- [x] Automated tests (69 passing, 100% coverage as of Phase 4 — grows every phase)
+- [x] Automated tests (83 passing, 100% coverage as of Phase 5 — grows every phase)
 - [x] Setup instructions
 
 Work is tracked as one GitHub issue per phase (Phase 0 → 11, plus a Backlog
